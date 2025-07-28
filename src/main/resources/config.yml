@@ -1,0 +1,32 @@
+# StaticParticles Configuration
+# Plugin by Lino
+
+# Particle display settings
+particle-settings:
+  # How often to display particles (in ticks, 20 ticks = 1 second)
+  update-interval: 2
+
+  # Maximum render distance for particles (in blocks)
+  render-distance: 48
+
+  # Enable particle effects
+  enabled: true
+
+# Storage settings
+storage:
+  # Auto-save interval (in minutes, 0 to disable)
+  auto-save-interval: 5
+
+  # Save particles on server shutdown
+  save-on-shutdown: true
+
+# Performance settings
+performance:
+  # Maximum particles allowed
+  max-particles: 1000
+
+  # Limit particles per chunk
+  particles-per-chunk: 50
+
+# Debug mode
+debug: false

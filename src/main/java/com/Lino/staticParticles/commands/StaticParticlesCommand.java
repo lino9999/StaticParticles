@@ -48,30 +48,88 @@ public class StaticParticlesCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        String effectName = args[0].toLowerCase();
+        String subCommand = args[0].toLowerCase();
 
-        if (effectName.equals("remove")) {
+        if (subCommand.equals("remove")) {
             if (!player.hasPermission("staticparticles.remove")) {
                 player.sendMessage(messages.getMessage("no-permission"));
                 return true;
             }
 
-            double radius = 5.0;
             if (args.length > 1) {
+
                 try {
-                    radius = Double.parseDouble(args[1]);
+                    int value = Integer.parseInt(args[1]);
+
+                    // If value is small (0-99), treat as ID
+                    if (value < 100 && value >= 0) {
+                        List<StaticParticle> particles = particleManager.getParticles();
+                        if (value < particles.size()) {
+                            StaticParticle particle = particles.get(value);
+                            boolean removed = particleManager.removeParticle(value);
+                            if (removed) {
+                                player.sendMessage(messages.getMessage("particle-removed-id")
+                                        .replace("{id}", String.valueOf(value))
+                                        .replace("{effect}", particle.getEffectName()));
+                            } else {
+                                player.sendMessage(messages.getMessage("particle-not-found"));
+                            }
+                        } else {
+                            player.sendMessage(messages.getMessage("invalid-particle-id"));
+                        }
+                    } else {
+                        // Treat as radius
+                        double radius = value;
+                        int removed = particleManager.removeNearbyParticles(player.getLocation(), radius);
+                        player.sendMessage(messages.getMessage("particles-removed").replace("{count}", String.valueOf(removed)));
+                    }
                 } catch (NumberFormatException e) {
-                    player.sendMessage(messages.getMessage("invalid-radius"));
+                    player.sendMessage(messages.getMessage("invalid-number"));
                     return true;
                 }
+            } else {
+                // Default radius
+                int removed = particleManager.removeNearbyParticles(player.getLocation(), 5.0);
+                player.sendMessage(messages.getMessage("particles-removed").replace("{count}", String.valueOf(removed)));
             }
-
-            int removed = particleManager.removeNearbyParticles(player.getLocation(), radius);
-            player.sendMessage(messages.getMessage("particles-removed").replace("{count}", String.valueOf(removed)));
             return true;
         }
 
-        if (effectName.equals("list")) {
+        if (subCommand.equals("removeid")) {
+            if (!player.hasPermission("staticparticles.remove")) {
+                player.sendMessage(messages.getMessage("no-permission"));
+                return true;
+            }
+
+            if (args.length < 2) {
+                player.sendMessage(messages.getMessage("usage-removeid"));
+                return true;
+            }
+
+            try {
+                int id = Integer.parseInt(args[1]);
+                List<StaticParticle> particles = particleManager.getParticles();
+
+                if (id >= 0 && id < particles.size()) {
+                    StaticParticle particle = particles.get(id);
+                    boolean removed = particleManager.removeParticle(id);
+                    if (removed) {
+                        player.sendMessage(messages.getMessage("particle-removed-id")
+                                .replace("{id}", String.valueOf(id))
+                                .replace("{effect}", particle.getEffectName()));
+                    } else {
+                        player.sendMessage(messages.getMessage("particle-not-found"));
+                    }
+                } else {
+                    player.sendMessage(messages.getMessage("invalid-particle-id"));
+                }
+            } catch (NumberFormatException e) {
+                player.sendMessage(messages.getMessage("invalid-number"));
+            }
+            return true;
+        }
+
+        if (subCommand.equals("list")) {
             player.sendMessage(messages.getMessage("particle-list-header"));
             List<StaticParticle> particles = particleManager.getParticles();
             if (particles.isEmpty()) {
@@ -91,7 +149,7 @@ public class StaticParticlesCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        if (effectName.equals("clear")) {
+        if (subCommand.equals("clear")) {
             if (!player.hasPermission("staticparticles.clear")) {
                 player.sendMessage(messages.getMessage("no-permission"));
                 return true;
@@ -102,7 +160,7 @@ public class StaticParticlesCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        ParticleEffect effect = particleManager.getEffect(effectName);
+        ParticleEffect effect = particleManager.getEffect(subCommand);
         if (effect == null) {
             player.sendMessage(messages.getMessage("invalid-effect"));
             player.sendMessage(messages.getMessage("available-effects")
@@ -110,11 +168,11 @@ public class StaticParticlesCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        StaticParticle particle = new StaticParticle(player.getLocation(), effectName);
+        StaticParticle particle = new StaticParticle(player.getLocation(), subCommand);
         particleManager.addParticle(particle);
 
         player.sendMessage(messages.getMessage("particle-created")
-                .replace("{effect}", effectName)
+                .replace("{effect}", subCommand)
                 .replace("{x}", String.valueOf((int)player.getLocation().getX()))
                 .replace("{y}", String.valueOf((int)player.getLocation().getY()))
                 .replace("{z}", String.valueOf((int)player.getLocation().getZ())));
@@ -128,6 +186,7 @@ public class StaticParticlesCommand implements CommandExecutor, TabCompleter {
             List<String> completions = new ArrayList<>();
             completions.addAll(particleManager.getEffectNames());
             completions.add("remove");
+            completions.add("removeid");
             completions.add("list");
             completions.add("clear");
 
@@ -136,8 +195,17 @@ public class StaticParticlesCommand implements CommandExecutor, TabCompleter {
                     .collect(Collectors.toList());
         }
 
-        if (args.length == 2 && args[0].equalsIgnoreCase("remove")) {
-            return List.of("5", "10", "15", "20");
+        if (args.length == 2) {
+            if (args[0].equalsIgnoreCase("remove")) {
+                return List.of("5", "10", "15", "20");
+            }
+            if (args[0].equalsIgnoreCase("removeid")) {
+                List<String> ids = new ArrayList<>();
+                for (int i = 0; i < particleManager.getParticles().size(); i++) {
+                    ids.add(String.valueOf(i));
+                }
+                return ids;
+            }
         }
 
         return new ArrayList<>();

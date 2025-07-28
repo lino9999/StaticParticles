@@ -80,6 +80,15 @@ public class ParticleManager {
         plugin.getStorageManager().saveParticles();
     }
 
+    public boolean removeParticle(int index) {
+        if (index >= 0 && index < particles.size()) {
+            particles.remove(index);
+            plugin.getStorageManager().saveParticles();
+            return true;
+        }
+        return false;
+    }
+
     public int removeNearbyParticles(Location center, double radius) {
         int removed = 0;
         synchronized (particles) {
@@ -93,7 +102,9 @@ public class ParticleManager {
                 }
             }
         }
-        plugin.getStorageManager().saveParticles();
+        if (removed > 0) {
+            plugin.getStorageManager().saveParticles();
+        }
         return removed;
     }
 

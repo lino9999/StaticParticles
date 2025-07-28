@@ -1,7 +1,7 @@
-name: Static Particles
-version: '1.0'
+name: StaticParticles
+version: 1.0
 main: com.Lino.staticParticles.StaticParticles
-api-version: '1.21'
+api-version: 1.20
 author: Lino
 description: Create permanent particle effects that persist across server restarts
 
