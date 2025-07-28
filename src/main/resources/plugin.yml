@@ -2,3 +2,29 @@ name: Static Particles
 version: '1.0'
 main: com.Lino.staticParticles.StaticParticles
 api-version: '1.21'
+author: Lino
+description: Create permanent particle effects that persist across server restarts
+
+commands:
+  staticparticles:
+    description: Main command for StaticParticles
+    usage: /<command> <effect|remove|list|clear>
+    aliases: [sp, sparticles]
+
+permissions:
+  staticparticles.use:
+    description: Allows creating static particle effects
+    default: op
+  staticparticles.remove:
+    description: Allows removing nearby particle effects
+    default: op
+  staticparticles.clear:
+    description: Allows clearing all particle effects
+    default: op
+  staticparticles.admin:
+    description: All StaticParticles permissions
+    default: op
+    children:
+      staticparticles.use: true
+      staticparticles.remove: true
+      staticparticles.clear: true
